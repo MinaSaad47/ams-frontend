@@ -13,9 +13,11 @@ import '../view.dart';
 import '../widgets/attendances_table.dart';
 
 class AttendeeSubjectPage extends ConsumerWidget {
-  AttendeeSubjectPage({Key? key, required this.subjectId}) : super(key: key);
 
-  final String subjectId;
+  AttendeeSubjectPage(this.attendeeId, {Key? key, required this.subjectId})
+      : super(key: key);
+
+  final String attendeeId, subjectId;
   final navBarKey = GlobalKey<ConvexAppBarState>();
   final pageController = PageController();
 
@@ -49,7 +51,10 @@ class AttendeeSubjectPage extends ConsumerWidget {
       body: Consumer(
         builder: (context, ref, child) {
           final subject = ref.watch(subjectProvider(subjectId));
-          final attendances = ref.watch(subjectAttendancesProvider(subjectId));
+          final attendances = ref.watch(subjectAttendancesProvider(
+            subjectId,
+            attendeeId: attendeeId,
+          ));
 
           return Padding(
             padding: const EdgeInsets.all(KPaddings.p30),
@@ -95,6 +100,66 @@ class AttendeeSubjectPage extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class SubjectInfoView extends ConsumerWidget {
+  final Subject subject;
+
+  const SubjectInfoView(this.subject, {super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [SubjectCard(subject)],
+    );
+  }
+}
+
+class AttendancesView extends ConsumerWidget {
+  final List<Attendance> attendances;
+
+  const AttendancesView(this.attendances, {super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return DataTable(
+      columns: [
+        DataColumn(
+          label: Icon(
+            KIcons.attendances,
+            color: Theme.of(context).scaffoldBackgroundColor,
+          ),
+          numeric: true,
+        ),
+        DataColumn(
+          label: Text(context.l10n.attendee),
+        ),
+        DataColumn(
+          label: Text('time'.hardcoded),
+        ),
+      ],
+      rows: [
+        for (int i = 1; i < attendances.length; i++)
+          DataRow(
+            cells: [
+              DataCell(Text('$i'), placeholder: true),
+              DataCell(Text(attendances[i].attendee.name)),
+              DataCell(Text(attendances[i].createAt.toString())),
+            ],
+          )
+      ],
+      border: TableBorder.all(
+        borderRadius: BorderRadius.circular(KRadiuses.r50),
+      ),
+      headingRowColor: MaterialStateProperty.resolveWith(
+        (Set<MaterialState> states) => Theme.of(context).colorScheme.primary,
+      ),
+      headingTextStyle: TextStyle(
+        color: Theme.of(context).scaffoldBackgroundColor,
+      ),
+      clipBehavior: Clip.antiAlias,
     );
   }
 }
